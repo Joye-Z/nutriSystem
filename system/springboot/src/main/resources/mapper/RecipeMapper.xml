@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.RecipeMapper">
+
+    <select id="selectAll" resultType="com.example.entity.Recipe">
+        select * from recipe
+        <where>
+            <if test="name != null and name != ''">
+                and name like concat('%', #{name}, '%')
+            </if>
+            <if test="category != null and category != ''">
+                and category = #{category}
+            </if>
+            <if test="difficulty != null and difficulty != ''">
+                and difficulty = #{difficulty}
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <insert id="insert" parameterType="com.example.entity.Recipe" useGeneratedKeys="true" keyProperty="id">
+        insert into recipe(name, description, ingredients, steps, cooking_time, calories, protein, carbohydrate, fat, category, difficulty, image)
+        values (#{name}, #{description}, #{ingredients}, #{steps}, #{cookingTime}, #{calories}, #{protein}, #{carbohydrate}, #{fat}, #{category}, #{difficulty}, #{image})
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Recipe">
+        update recipe 
+        set name = #{name}, 
+            description = #{description}, 
+            ingredients = #{ingredients}, 
+            steps = #{steps}, 
+            cooking_time = #{cookingTime}, 
+            calories = #{calories}, 
+            protein = #{protein}, 
+            carbohydrate = #{carbohydrate}, 
+            fat = #{fat}, 
+            category = #{category}, 
+            difficulty = #{difficulty}, 
+            image = #{image}
+        where id = #{id}
+    </update>
+
+</mapper>

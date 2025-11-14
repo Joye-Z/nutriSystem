@@ -1,0 +1,119 @@
+package com.example.service;
+
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.crypto.SecureUtil;
+import com.example.entity.Account;
+import com.example.entity.Admin;
+import com.example.exception.CustomException;
+import com.example.mapper.AdminMapper;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import jakarta.annotation.Resource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * 管理员业务处理
+ **/
+@Service
+public class AdminService {
+
+    @Resource
+    private AdminMapper adminMapper;
+
+    private static final String DEFAULT_PASS = "123";
+    private static final String PASS_SALT = "zhang";
+
+    /**
+     * 新增
+     */
+    public void add(Admin admin) {
+        Admin dbAdmin = adminMapper.selectByUsername(admin.getUsername());
+        if (ObjectUtil.isNotNull(dbAdmin)) {
+            throw new CustomException("用户已存在");
+        }
+        if (ObjectUtil.isEmpty(admin.getPassword())) {
+            admin.setPassword(DEFAULT_PASS);
+        }
+        admin.setPassword(securePass(admin.getPassword()));
+        if (ObjectUtil.isEmpty(admin.getName())) {
+            admin.setName(admin.getUsername());
+        }
+        admin.setRole("ADMIN");
+        adminMapper.insert(admin);
+    }
+
+
+    /**
+     * 删除
+     */
+    public void deleteById(Integer id) {
+        adminMapper.deleteById(id);
+    }
+
+    /**
+     * 修改
+     */
+    public void updateById(Admin admin) {
+        adminMapper.updateById(admin);
+    }
+
+    /**
+     * 根据ID查询
+     */
+    public Admin selectById(Integer id) {
+        return adminMapper.selectById(id);
+    }
+
+    /**
+     * 查询所有
+     */
+    public List<Admin> selectAll(Admin admin) {
+        return adminMapper.selectAll(admin);
+    }
+
+    /**
+     * 分页查询
+     */
+    public PageInfo<Admin> selectPage(Admin admin, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Admin> list = adminMapper.selectAll(admin);
+        return PageInfo.of(list);
+    }
+
+    /**
+     * 登录
+     */
+    public Account login(Account account) {
+        account.setPassword(securePass(account.getPassword()));
+        Account dbAdmin = adminMapper.selectByUsername(account.getUsername());
+        if (ObjectUtil.isNull(dbAdmin)) {
+            throw new CustomException("用户不存在");
+        }
+        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+            throw new CustomException("账号或密码错误");
+        }
+        return dbAdmin;
+    }
+
+    /**
+     * 修改密码
+     */
+    public void updatePassword(Account account) {
+        Admin dbAdmin = adminMapper.selectByUsername(account.getUsername());
+        if (ObjectUtil.isNull(dbAdmin)) {
+            throw new CustomException("用户不存在");
+        }
+        if (!account.getPassword().equals(dbAdmin.getPassword())) {
+            throw new CustomException("原密码错误");
+        }
+        dbAdmin.setPassword(securePass(account.getNewPassword()));
+        adminMapper.updateById(dbAdmin);
+    }
+
+    private String securePass(String password) {
+        return SecureUtil.md5(password + PASS_SALT);
+    }
+
+}
