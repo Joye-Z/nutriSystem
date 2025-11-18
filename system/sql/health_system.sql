@@ -68,6 +68,29 @@ INSERT INTO `recipe` VALUES (2, '红烧肉', '经典家常菜', '五花肉500g,�
 INSERT INTO `recipe` VALUES (3, '红烧肉plus', '超美味！！！', '水\n油\n肉', '洗\n蒸\n焖', 60, 300, 123.00, 200.00, 300.00, '家常菜', '中等', 'http://localhost:9090/files/download/1763107914989-红烧肉.png', '2025-11-14 16:14:05', '2025-11-14 19:31:44');
 
 -- ----------------------------
+-- Table structure for meal_plan
+-- ----------------------------
+DROP TABLE IF EXISTS `meal_plan`;
+CREATE TABLE `meal_plan`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` int NOT NULL COMMENT '用户ID',
+  `plan_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '计划名称',
+  `plan_date` date NOT NULL COMMENT '计划日期',
+  `meal_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '餐次类型(早餐/午餐/晚餐/加餐)',
+  `recipe_id` int NULL DEFAULT NULL COMMENT '食谱ID',
+  `custom_meal` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '自定义餐食内容',
+  `calories` int NULL DEFAULT NULL COMMENT '热量(卡路里)',
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '备注',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_user_date`(`user_id` ASC, `plan_date` ASC) USING BTREE,
+  INDEX `idx_recipe`(`recipe_id` ASC) USING BTREE,
+  CONSTRAINT `fk_meal_plan_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_meal_plan_recipe` FOREIGN KEY (`recipe_id`) REFERENCES `recipe` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '膳食计划表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;

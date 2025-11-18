@@ -1,6 +1,6 @@
 <template>
   <div class="background-image">
-    <div style="font-weight: bold; font-size: 32px; text-align: center; color: white; padding-top: 50px">健康食谱管理与膳食规划系统</div>
+    <div style="font-weight: bold; font-size: 35px; text-align: center; color: darkgreen; padding-top: 50px">健康食谱管理与膳食规划系统</div>
     <div class="login-box">
       <div style="font-weight: bold; font-size: 28px; text-align: center; margin-bottom: 30px; color: #057748">登 录</div>
       <el-form :model="data.form" ref="formRef" :rules="data.rules" @submit.native.prevent="handleLogin">
@@ -151,7 +151,7 @@ const performLogin = () => {
   z-index: 1000;
 }
 .background-image {
-  background-image: url('../../src/assets/imgs/background.png'); /* 替换为您的图片路径 */
+  background-image: url('../../src/assets/imgs/background.jpg'); /* 替换为您的图片路径 */
   height: 100vh;
   overflow: hidden;
   position: relative;
