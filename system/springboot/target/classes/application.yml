@@ -1,5 +1,5 @@
 server:
-  port: 9090
+  port: 9091
 
 # 数据库配置
 spring:
@@ -21,4 +21,4 @@ mybatis:
     map-underscore-to-camel-case: true
 
 # 文件上传的前缀url
-fileBaseUrl: http://localhost:9090
+fileBaseUrl: http://localhost:9091

@@ -17,6 +17,7 @@
 import { reactive, onMounted, onUnmounted } from "vue";
 import * as echarts from 'echarts';
 import request from "@/utils/request";
+import { ElMessage } from 'element-plus';
 
 // 生成本周的日期数组（格式：MM-DD）
 const generateCurrentWeekDates = () => {
@@ -100,6 +101,7 @@ const fetchCalorieDataFromMealPlan = async () => {
     // 确保用户ID存在
     if (!user.id) {
       console.error('用户ID不存在，请先登录');
+      ElMessage.error('用户ID不存在，请先登录');
       
       // 用户未登录，显示0值数组
       const zeroData = dates.map(() => 0);

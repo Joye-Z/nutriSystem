@@ -33,6 +33,10 @@
             <el-icon><Calendar /></el-icon>
             <span>膳食规划</span>
           </el-menu-item>
+          <el-menu-item index="/recommendation">
+            <el-icon><StarFilled /></el-icon>
+            <span>营养分析</span>
+          </el-menu-item>
           <el-sub-menu index="2" v-if="data.user.role === 'ADMIN'">
             <template #title>
               <el-icon><Memo /></el-icon>
@@ -74,7 +78,7 @@
 import { reactive } from "vue";
 import router from "@/router";
 import {ElMessage} from "element-plus";
-import { Calendar } from '@element-plus/icons-vue';
+import { Calendar, StarFilled } from '@element-plus/icons-vue';
 
 const data = reactive({
   user: JSON.parse(localStorage.getItem('system-user') || '{}')
