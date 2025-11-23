@@ -1,5 +1,6 @@
 D:\health_system\system\springboot\src\main\java\com\example\common\CorsConfig.java
 D:\health_system\system\springboot\src\main\java\com\example\common\Result.java
+D:\health_system\system\springboot\src\main\java\com\example\config\OSSConfig.java
 D:\health_system\system\springboot\src\main\java\com\example\controller\AdminController.java
 D:\health_system\system\springboot\src\main\java\com\example\controller\FileController.java
 D:\health_system\system\springboot\src\main\java\com\example\controller\MealPlanController.java
@@ -19,6 +20,8 @@ D:\health_system\system\springboot\src\main\java\com\example\mapper\MealPlanMapp
 D:\health_system\system\springboot\src\main\java\com\example\mapper\RecipeMapper.java
 D:\health_system\system\springboot\src\main\java\com\example\mapper\UserMapper.java
 D:\health_system\system\springboot\src\main\java\com\example\service\AdminService.java
+D:\health_system\system\springboot\src\main\java\com\example\service\FileService.java
+D:\health_system\system\springboot\src\main\java\com\example\service\impl\OssFileServiceImpl.java
 D:\health_system\system\springboot\src\main\java\com\example\service\MealPlanService.java
 D:\health_system\system\springboot\src\main\java\com\example\service\NutritionAnalysisService.java
 D:\health_system\system\springboot\src\main\java\com\example\service\RecipeCacheService.java

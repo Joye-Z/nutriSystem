@@ -36,7 +36,12 @@
       <el-table :data="data.tableData" stripe @row-click="handleRowClick">
         <el-table-column label="食谱图片" width="100">
           <template #default="scope">
-            <el-image :src="scope.row.image" style="width: 60px; height: 60px; border-radius: 6px"></el-image>
+            <el-image 
+              :src="preprocessImageUrl(scope.row.image)" 
+              style="width: 60px; height: 60px; border-radius: 6px" 
+              :fallback="defaultImage" 
+              @error="handleImageError($event, scope.row)"
+            ></el-image>
           </template>
         </el-table-column>
         <el-table-column label="食谱名称" prop="name" width="200"></el-table-column>
@@ -72,7 +77,12 @@
         <el-form-item label="食谱图片" prop="image">
           <div style="display: flex; align-items: center; gap: 20px;">
             <div v-if="data.form.image" style="flex-shrink: 0; position: relative;">
-              <el-image :src="data.form.image" style="width: 120px; height: 120px; border-radius: 8px; border: 1px solid #eee;"></el-image>
+              <el-image 
+                :src="preprocessImageUrl(data.form.image)" 
+                style="width: 120px; height: 120px; border-radius: 8px; border: 1px solid #eee;" 
+                :fallback="defaultImage"
+                @error="handleImageError($event)"
+              ></el-image>
               <el-button 
                 type="danger" 
                 size="small" 
@@ -180,7 +190,12 @@
       <div v-if="data.currentRecipe" style="padding: 20px">
         <el-row :gutter="20">
           <el-col :span="8">
-            <el-image :src="data.currentRecipe.image" style="width: 100%; border-radius: 8px"></el-image>
+            <el-image 
+              :src="preprocessImageUrl(data.currentRecipe.image)" 
+              style="width: 100%; border-radius: 8px" 
+              :fallback="defaultImage"
+              @error="handleImageError($event)"
+            ></el-image>
           </el-col>
           <el-col :span="16">
             <h2 style="margin-top: 0">{{ data.currentRecipe.name }}</h2>
@@ -253,8 +268,27 @@
 
 <script setup>
 import request from "@/utils/request";
-import {reactive} from "vue";
+import {reactive, ref, onMounted} from "vue";
 import {ElMessageBox, ElMessage} from "element-plus";
+import {Close} from "@element-plus/icons-vue";
+
+// 默认错误图片URL
+const defaultImage = '/images/default-image.png';
+
+// 预处理图片URL，确保正确显示
+const preprocessImageUrl = (url) => {
+  if (!url) return '';
+  
+  // 移除URL中的查询参数部分（如果有）
+  let cleanUrl = url;
+  const queryParamIndex = url.indexOf('?');
+  if (queryParamIndex > 0) {
+    cleanUrl = url.substring(0, queryParamIndex);
+  }
+  
+  // 直接返回原始URL（可能是OSS URL），不做代理转换
+  return cleanUrl;
+};
 
 // 文件上传的接口地址
 const uploadUrl = import.meta.env.VITE_BASE_URL + '/files/upload'
@@ -274,21 +308,28 @@ const data = reactive({
   userRole: JSON.parse(localStorage.getItem('system-user') || '{}').role || 'USER'
 })
 
-// 分页查询
-const load = () => {
-  const params = {
-    pageNum: data.pageNum,
-    pageSize: data.pageSize,
-    name: data.name,
-    category: data.category,
-    difficulty: data.difficulty
+// 处理图片加载错误
+const handleImageError = (event, row = null) => {
+  console.error('图片加载失败:', event);
+  const target = event.target;
+  
+  // 如果有row对象，记录失败信息但直接使用默认图片
+  if (row && row.image) {
+    console.warn(`食谱ID: ${row.id}, 图片URL: ${row.image} 加载失败`);
   }
   
-  request.get('/recipe/selectPage', { params }).then(res => {
-    data.tableData = res.data?.list || []
-    data.total = res.data?.total || 0
-  })
-}
+  // 直接使用默认图片，不尝试转换URL
+  if (target.src !== defaultImage) {
+    console.log('使用默认图片');
+    target.src = defaultImage;
+  }
+};
+
+// 在组件挂载时自动调用load函数
+onMounted(() => {
+  console.log('组件挂载完成，自动调用load函数');
+  load();
+});
 
 // 新增
 const handleAdd = () => {
@@ -315,9 +356,15 @@ const handleEdit = (row, event) => {
 const add = () => {
   request.post('/recipe/add', data.form).then(res => {
     if (res.code === '200') {
-      load()
-      ElMessage.success('操作成功')
+      // 先关闭弹窗，再加载数据，确保响应式更新
       data.formVisible = false
+      // 强制刷新数据，确保获取最新列表
+      setTimeout(() => {
+        // 重置为第一页以确保能看到新添加的数据
+        data.pageNum = 1
+        load()
+      }, 100)
+      ElMessage.success('操作成功')
     } else {
       ElMessage.error(res.msg)
     }
@@ -328,9 +375,14 @@ const add = () => {
 const update = () => {
   request.put('/recipe/update', data.form).then(res => {
     if (res.code === '200') {
-      load()
-      ElMessage.success('操作成功')
+      // 先关闭弹窗，再加载数据，确保响应式更新
       data.formVisible = false
+      // 强制刷新数据，确保获取最新列表
+      setTimeout(() => {
+        // 保持当前页码，但重新加载数据
+        load()
+      }, 100)
+      ElMessage.success('操作成功')
     } else {
       ElMessage.error(res.msg)
     }
@@ -351,7 +403,14 @@ const handleDelete = (id, event) => {
   ElMessageBox.confirm('删除后数据无法恢复，您确定删除吗?', '删除确认', { type: 'warning' }).then(res => {
     request.delete('/recipe/delete/' + id).then(res => {
       if (res.code === '200') {
-        load()
+        // 强制刷新数据，确保获取最新列表
+        setTimeout(() => {
+          // 检查当前页面是否只有一条数据，如果是则返回上一页
+          if (data.tableData.length === 1 && data.pageNum > 1) {
+            data.pageNum--
+          }
+          load()
+        }, 100)
         ElMessage.success('操作成功')
       } else {
         ElMessage.error(res.msg)
@@ -375,9 +434,85 @@ const reset = () => {
 
 // 处理文件上传的钩子
 const handleImgSuccess = (res) => {
-  data.form.image = res.data  // res.data就是文件上传返回的文件路径
+  console.log('上传响应:', res);
+  // 直接使用完整的OSS URL，不再转换为代理URL
+  const ossUrl = res.data;
+  console.log('使用完整OSS URL:', ossUrl);
+  
+  // 直接赋值，不做任何URL转换
+  data.form.image = ossUrl;
+  
+  // 立即尝试加载图片来验证URL是否有效
+  const img = new Image();
+  img.onload = () => console.log('图片URL有效，能够正常加载');
+  img.onerror = () => console.error('图片URL无效，无法加载图片');
+  img.src = ossUrl;
+  
   ElMessage.success('上传成功')
 }
 
-load()
+// 从后端API获取实际数据
+const load = () => {
+  console.log('开始加载食谱数据');
+  
+  // 构造查询参数
+  const params = {
+    pageNum: data.pageNum,
+    pageSize: data.pageSize,
+    name: data.name,
+    category: data.category,
+    difficulty: data.difficulty
+  };
+  
+  console.log('发送API请求获取食谱数据，参数:', params);
+  
+  // 调用后端API获取实际数据 (使用selectPage而不是list)
+  request.get('/recipe/selectPage', { params }).then(res => {
+    console.log('API响应完整内容:', JSON.stringify(res, null, 2));
+    
+    if (res.code === '200' && res.data) {
+      // 详细记录响应数据结构
+      console.log('响应数据类型:', typeof res.data);
+      console.log('响应数据属性:', Object.keys(res.data));
+      
+      // 后端返回的是res.data.list，需要适配数据结构
+      data.tableData = res.data.list || [];
+      data.total = res.data.total || 0;
+      console.log('表格数据已设置，数量:', data.tableData.length);
+      
+      // 记录每个食谱的详细信息以便调试
+      if (data.tableData.length > 0) {
+        console.log('获取到的前5条食谱数据示例:');
+        data.tableData.slice(0, 5).forEach(item => {
+          console.log(`食谱ID: ${item.id}, 名称: ${item.name}, 图片URL: ${item.image}`);
+        });
+      } else {
+        console.log('未获取到任何食谱数据');
+      }
+    } else {
+      console.error('获取数据失败，响应码:', res.code, '响应消息:', res.msg || res.message);
+      data.tableData = [];
+      data.total = 0;
+    }
+  }).catch(error => {
+    console.error('API请求失败，错误详情:', error);
+    if (error.response) {
+      console.error('服务器响应状态:', error.response.status);
+      console.error('服务器响应数据:', error.response.data);
+    }
+    data.tableData = [];
+    data.total = 0;
+  });
+}
 </script>
+
+<style scoped>
+/* 可以添加一些自定义样式来美化图片加载错误的显示 */
+.image-error-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #999;
+}
+</style>

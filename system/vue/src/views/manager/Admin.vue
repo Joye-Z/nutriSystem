@@ -160,7 +160,16 @@ const reset = () => {
 
 // 处理文件上传的钩子
 const handleImgSuccess = (res) => {
-  data.form.avatar = res.data  // res.data就是文件上传返回的文件路径，获取到路径后赋值表单的属性
+  console.log('头像上传响应:', res);
+  // 直接使用完整的OSS URL，不再转换为代理URL
+  data.form.avatar = res.data;
+  console.log('使用完整OSS URL作为头像:', data.form.avatar);
+  
+  // 立即尝试加载图片来验证URL是否有效
+  const img = new Image();
+  img.onload = () => console.log('头像URL有效，能够正常加载');
+  img.onerror = () => console.error('头像URL无效，无法加载图片');
+  img.src = data.form.avatar;
 }
 
 load()

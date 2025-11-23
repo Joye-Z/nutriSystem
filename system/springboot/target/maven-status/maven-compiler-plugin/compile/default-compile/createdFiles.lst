@@ -8,6 +8,7 @@ com\example\service\RecipeCacheService.class
 com\example\controller\UserController.class
 com\example\SpringbootApplication.class
 com\example\exception\CustomException.class
+com\example\config\OSSConfig.class
 com\example\controller\AdminController.class
 com\example\entity\Admin.class
 com\example\controller\WebController.class
@@ -15,10 +16,12 @@ com\example\controller\NutritionAnalysisController.class
 com\example\mapper\UserMapper.class
 com\example\entity\Recipe.class
 com\example\mapper\MealPlanMapper.class
+com\example\service\FileService.class
 com\example\service\RecipeService.class
 com\example\common\Result.class
 com\example\service\NutritionAnalysisService$ScoredRecipe.class
 com\example\service\RecipeCacheService$CacheEntry.class
+com\example\service\impl\OssFileServiceImpl.class
 com\example\entity\Account.class
 com\example\service\AdminService.class
 com\example\exception\GlobalExceptionHandler.class

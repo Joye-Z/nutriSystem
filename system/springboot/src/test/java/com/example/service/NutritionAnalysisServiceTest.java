@@ -81,7 +81,7 @@ public class NutritionAnalysisServiceTest {
     public void testCalculateBMR_Female() {
         testUser.setGender("女");
         // 预期结果使用Mifflin-St Jeor公式：10*70 + 6.25*175 - 5*30 - 161 = 1471.5
-        double bmr = recommendationService.calculateBMR(testUser);
+        double bmr = nutritionAnalysisService.calculateBMR(testUser);
         assertEquals(1471.5, bmr, 0.1);
     }
 
@@ -92,7 +92,7 @@ public class NutritionAnalysisServiceTest {
     public void testCalculateTDEE() {
         double bmr = 1637.5;
         // 中度活动水平系数为1.55
-        double tdee = recommendationService.calculateTDEE(bmr, "中度");
+        double tdee = nutritionAnalysisService.calculateTDEE(bmr, "中度");
         assertEquals(1637.5 * 1.55, tdee, 0.1);
     }
 

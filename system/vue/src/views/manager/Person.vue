@@ -43,7 +43,16 @@ const data = reactive({
 })
 
 const handleFileUpload = (file) => {
-  data.user.avatar = file.data
+  console.log('个人头像上传响应:', file);
+  // 直接使用完整的OSS URL，不再转换为代理URL
+  data.user.avatar = file.data;
+  console.log('使用完整OSS URL作为个人头像:', data.user.avatar);
+  
+  // 立即尝试加载图片来验证URL是否有效
+  const img = new Image();
+  img.onload = () => console.log('个人头像URL有效，能够正常加载');
+  img.onerror = () => console.error('个人头像URL无效，无法加载图片');
+  img.src = data.user.avatar;
 }
 
 const emit = defineEmits(["updateUser"])
