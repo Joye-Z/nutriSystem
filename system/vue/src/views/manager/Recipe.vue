@@ -33,7 +33,7 @@
       <div style="margin-bottom: 10px" v-if="data.userRole === 'ADMIN'">
         <el-button type="primary" @click="handleAdd">新增食谱</el-button>
       </div>
-      <el-table :data="data.tableData" stripe @row-click="handleRowClick">
+      <el-table :data="data.tableData" stripe @row-click="handleRowClick" :row-class-name="tableRowClassName">
         <el-table-column label="食谱图片" width="100">
           <template #default="scope">
             <el-image 
@@ -234,7 +234,7 @@
             
             <h3>食材清单</h3>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 6px">
-              <div v-for="(item, index) in data.currentRecipe.ingredients.split('\n')" :key="index" style="margin-bottom: 5px">
+              <div v-for="(item, index) in (data.currentRecipe.ingredients || '').split('\n')" :key="index" style="margin-bottom: 5px">
                 <el-tag type="success" size="small">{{ index + 1 }}</el-tag>
                 <span style="margin-left: 10px">{{ item }}</span>
               </div>
@@ -244,7 +244,7 @@
             
             <h3>烹饪步骤</h3>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 6px">
-              <div v-for="(step, index) in data.currentRecipe.steps.split('\n')" :key="index" style="margin-bottom: 15px">
+              <div v-for="(step, index) in (data.currentRecipe.steps || '').split('\n')" :key="index" style="margin-bottom: 15px">
                 <div style="display: flex; align-items: flex-start">
                   <div style="background: #409EFF; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0">
                     {{ index + 1 }}
@@ -300,6 +300,7 @@ const data = reactive({
   formVisible: false,
   detailVisible: false,
   currentRecipe: null,
+  selectedRowId: null,
   form: {},
   tableData: [],
   name: null,
@@ -338,9 +339,51 @@ const handleAdd = () => {
 }
 
 // 行点击事件
-const handleRowClick = (row) => {
-  data.currentRecipe = JSON.parse(JSON.stringify(row))
-  data.detailVisible = true
+const handleRowClick = (row, event) => {
+  // 记录点击事件详情，包括行数据和事件对象
+  console.log('=== 开始处理行点击事件 ===');
+  console.log('点击行数据:', JSON.stringify(row, null, 2));
+  console.log('事件对象存在:', !!event);
+  
+  // 保存选中行的ID用于高亮显示
+  data.selectedRowId = row.id;
+  console.log('已设置选中行ID:', row.id);
+  
+  // 先确保弹窗关闭状态（不依赖之前的状态）
+  data.detailVisible = false;
+  console.log('弹窗已关闭，准备更新数据');
+  
+  // 使用更可靠的定时器链确保DOM更新
+  setTimeout(() => {
+    console.log('第一个定时器执行，准备重置currentRecipe');
+    // 完全替换currentRecipe对象
+    data.currentRecipe = null;
+    
+    setTimeout(() => {
+      console.log('第二个定时器执行，准备赋值新数据');
+      // 深拷贝确保数据完整性
+      const newRecipeData = JSON.parse(JSON.stringify(row));
+      console.log('新食谱数据:', JSON.stringify(newRecipeData, null, 2));
+      
+      // 直接赋值
+      data.currentRecipe = newRecipeData;
+      console.log('currentRecipe已更新');
+      
+      // 立即打开弹窗
+      data.detailVisible = true;
+      console.log('弹窗已打开，显示食谱:', row.name);
+      console.log('=== 行点击事件处理完成 ===');
+    }, 100); // 增加延迟时间确保DOM更新
+  }, 50); // 增加延迟时间确保前一个操作完成
+}
+
+// 表格行样式类名
+const tableRowClassName = ({ row }) => {
+  // 如果是当前选中的行，添加高亮类名
+  if (row.id === data.selectedRowId) {
+    return 'selected-row';
+  }
+  return '';
 }
 
 // 编辑
@@ -514,5 +557,16 @@ const load = () => {
   justify-content: center;
   background-color: #f5f5f5;
   color: #999;
+}
+
+/* 选中行的高亮样式 */
+.selected-row {
+  background-color: #ecf5ff !important;
+  cursor: pointer;
+}
+
+.el-table__row:hover {
+  background-color: #f5f7fa;
+  cursor: pointer;
 }
 </style>
